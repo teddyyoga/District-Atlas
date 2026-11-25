@@ -8,24 +8,37 @@ const styles = {
 };
 
 function createMap(element) {
-  const map = L.map(element, { zoomSnap: .25, minZoom: 2, maxZoom: 15, zoomControl: false }).setView([39, 35], 5);
+  const map = L.map(element, { zoomSnap: .25, minZoom: 2, maxZoom: 15, maxBoundsViscosity: 1, zoomControl: false }).setView([39, 35], 5);
   map.attributionControl.setPrefix(false);
   L.control.zoom({ position: 'bottomleft' }).addTo(map);
   const reduceMotion = matchMedia('(prefers-reduced-motion: reduce)');
   let layer;
+  let pendingView;
   let districtLayers = new Map();
 
   function show(data, style, onEachFeature, padding, animate, onReady) {
+    if (pendingView) map.off('moveend', pendingView);
     map.stop();
+    map.setMaxBounds(null);
     if (layer) layer.remove();
     layer = L.geoJSON(data, { style, onEachFeature, className: 'map-shape' }).addTo(map);
+    const bounds = layer.getBounds();
+    const dragBounds = bounds.pad(.12);
     const options = { padding: [padding, padding], duration: .48 };
-    if (animate && !reduceMotion.matches) {
-      if (onReady) map.once('moveend', onReady);
-      map.flyToBounds(layer.getBounds(), options);
-    } else {
-      map.fitBounds(layer.getBounds(), { ...options, animate: false });
+
+    function settleView() {
+      pendingView = null;
+      map.setMaxBounds(dragBounds);
       onReady?.();
+    }
+
+    if (animate && !reduceMotion.matches) {
+      pendingView = settleView;
+      map.once('moveend', pendingView);
+      map.flyToBounds(bounds, options);
+    } else {
+      map.fitBounds(bounds, { ...options, animate: false });
+      settleView();
     }
   }
 
