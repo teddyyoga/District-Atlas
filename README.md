@@ -103,8 +103,8 @@ Open `index.html` directly to play locally. The libraries and data are included 
 
 To publish, push the project to a GitHub repository and configure GitHub Pages to serve the branch root. Enter the repository URL in the course peer-review system. [Course peer-review system](https://gmt458.hacettepe.edu.tr/)
 
-- GitHub repository URL — pending
-- GitHub Pages URL — pending
+- [GitHub repository](https://github.com/teddyyoga/District-Atlas)
+- [Play District Atlas on GitHub Pages](https://teddyyoga.github.io/District-Atlas/)
 
 ## AI assistance and lessons
 
