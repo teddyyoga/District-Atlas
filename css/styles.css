@@ -1,0 +1,144 @@
+:root { color-scheme: dark; font-family: "Segoe UI", system-ui, sans-serif; background: #101b1a; color: #f6f3de; --ink: #102622; --accent: #c9ec8f; --muted: #bacbbd; --edge: #4a6256; --glass: #182b27f5; }
+* { box-sizing: border-box; }
+body { margin: 0; }
+[hidden] { display: none !important; }
+button, input, select { font: inherit; }
+button, input, select { border: 1px solid var(--edge); border-radius: .6rem; }
+button { background: var(--accent); color: var(--ink); font-weight: 750; padding: .63rem .86rem; cursor: pointer; }
+button:hover:not(:disabled) { filter: brightness(1.12); }
+button:disabled { opacity: .55; cursor: default; }
+button.ghost { background: transparent; color: inherit; }
+input, select { background: #142520; color: inherit; padding: .62rem .75rem; min-width: 0; }
+input::placeholder { color: var(--muted); }
+:focus-visible { outline: 2px solid #f8d076; outline-offset: 3px; }
+.home { min-height: 100dvh; display: grid; grid-template-rows: auto 1fr auto; padding: 0 clamp(1.2rem, 6vw, 7rem); overflow: hidden; background: radial-gradient(ellipse at 80% 35%, #2c4939, transparent 58%), #14221f; }
+.home-header, .home-footer { display: flex; justify-content: space-between; align-items: center; min-height: 76px; border-bottom: 1px solid var(--edge); gap: 1rem; }
+.wordmark { font-family: Georgia, serif; font-size: 1.4rem; font-weight: 700; }
+.hero { display: grid; grid-template-columns: minmax(18rem, 5fr) minmax(0, 7fr); align-items: center; gap: 2rem; padding: 3rem 0; }
+.hero-copy h1 { font: 500 clamp(3rem, 6.8vw, 7rem)/.97 Georgia, serif; letter-spacing: -.055em; margin: 0 0 1.4rem; max-width: 12ch; }
+.hero-copy p { color: var(--muted); font-size: 1.1rem; line-height: 1.55; max-width: 34ch; }
+.hero-actions { display: flex; flex-wrap: wrap; gap: .7rem; margin-top: 1.6rem; }
+.hero-map { display: grid; place-items: center; aspect-ratio: 1.34; background-image: linear-gradient(#aac6a31c 1px, transparent 1px), linear-gradient(90deg, #aac6a31c 1px, transparent 1px); background-size: 2.5rem 2.5rem; border: 1px solid #aac6a340; border-radius: 1rem; overflow: hidden; }
+.hero-map img { width: 94%; filter: drop-shadow(0 12px 16px #071a17b0); }
+.home-footer { border-top: 1px solid var(--edge); border-bottom: 0; min-height: 58px; }
+.home-footer a { color: var(--muted); }
+.play { position: fixed; inset: 0; background: #172c28; overflow: hidden; }
+#map { position: absolute; inset: 0; background: radial-gradient(ellipse at center, #263f37, #162925 72%); }
+.glass { color: #f6f3de; background: var(--glass); border: 1px solid var(--edge); border-radius: .7rem; box-shadow: 0 .4rem 1.4rem #08191260; }
+.top-left { position: absolute; z-index: 600; top: .8rem; left: .8rem; display: flex; flex-wrap: wrap; gap: .45rem; max-width: calc(100% - 11rem); }
+.notice { width: 100%; margin: 0; padding: .55rem .75rem; }
+.progress { position: absolute; right: .8rem; top: .8rem; z-index: 620; width: min(18rem, calc(100% - 1.6rem)); max-height: 52dvh; overflow: auto; }
+.progress:not([open]) { width: auto; }
+summary { cursor: pointer; padding: .68rem .8rem; }
+.progress > summary strong { margin-inline-start: .55rem; color: var(--accent); }
+.progress-body { border-top: 1px solid var(--edge); padding: .45rem .78rem; }
+.metric { display: flex; justify-content: space-between; align-items: baseline; gap: .5rem; padding: .26rem 0; }
+.metric span, #storage-note { color: var(--muted); }
+.progress h2 { font: 1.35rem Georgia, serif; margin: .6rem 0 .3rem; }
+progress { width: 100%; accent-color: var(--accent); }
+#province-progress { border-top: 1px solid var(--edge); margin-top: .4rem; }
+#province-progress summary { padding-inline: 0; }
+#progress-list, #results { list-style: none; margin: 0; padding: 0; }
+#progress-list li { display: grid; grid-template-columns: 1fr auto auto; align-items: center; gap: .4rem; min-height: 2.1rem; }
+#progress-list li button { background: transparent; color: #ffd29d; padding: .2rem .32rem; font-size: .78rem; }
+#progress-list .percent { color: var(--accent); font-variant-numeric: tabular-nums; }
+.bottom-dock { position: absolute; bottom: max(.75rem, env(safe-area-inset-bottom)); left: 50%; transform: translateX(-50%); display: grid; justify-items: center; gap: .42rem; z-index: 610; width: min(30rem, calc(100% - 2rem)); pointer-events: none; }
+.bottom-dock > * { pointer-events: auto; }
+.guess-panel, .search-panel { padding: .4rem; }
+.guess-panel { width: min(100%, 26rem); }
+.guess-row { display: flex; gap: .4rem; }
+.guess-row input { flex: 1; }
+#feedback, #clue { margin: .35rem .2rem .1rem; }
+#feedback:empty, #clue:empty { display: none; }
+#clue { color: #f7cf75; overflow-wrap: anywhere; }
+.search-panel { position: relative; width: min(15.5rem, 88%); }
+.search-panel input { width: 100%; }
+#results { background: var(--glass); border: 1px solid var(--edge); border-radius: .6rem; position: absolute; bottom: calc(100% + .3rem); left: 0; right: 0; max-height: 30dvh; overflow: auto; padding: .25rem; }
+#results button { display: block; text-align: start; width: 100%; background: transparent; border: 0; color: inherit; }
+#results button:hover, #results button:focus-visible { background: #365648; }
+#results .empty { padding: .45rem; }
+.legend { display: flex; flex-wrap: wrap; gap: .25rem .7rem; justify-content: center; color: #e4eddd; font-size: .78rem; text-shadow: 0 1px 3px #07110f; }
+.legend > span { display: flex; align-items: center; gap: .25rem; }
+.legend i { width: .58rem; height: .58rem; border-radius: 50%; }
+.ready { background: #83b6a7; } .started { background: #edbf60; } .done { background: #95cc6a; } .unavailable { background: #76837b; }
+dialog { border: 1px solid var(--edge); background: #1d312b; color: inherit; border-radius: 1rem; width: min(34rem, calc(100% - 2rem)); padding: 1.25rem 1.5rem; }
+dialog::backdrop { background: #071411bc; }
+dialog h2 { font: 2rem Georgia, serif; margin: 0 0 1rem; }
+dialog li { margin: .5rem 0; line-height: 1.5; }
+dialog label, dialog select { display: block; margin-bottom: .65rem; }
+.leaflet-tooltip.district-name { background: #17352b; border: 1px solid #8abe7d; color: #f4ffe1; font: 650 .78rem system-ui, sans-serif; }
+.leaflet-tooltip.district-name::before { display: none; }
+path.celebrate { animation: glow .8s ease-out; }
+@keyframes glow { from { filter: drop-shadow(0 0 7px #d3ff9b); fill-opacity: 1; } }
+@media (max-width: 720px) {
+  .hero { grid-template-columns: 1fr; gap: 1.5rem; padding: 2rem 0; }
+  .hero-map { aspect-ratio: 1.9; }
+  .hero-copy h1 { font-size: clamp(2.8rem, 11vw, 4.8rem); }
+  .top-left { gap: .3rem; }
+  .top-left button { padding: .5rem; font-size: .84rem; }
+  .progress summary { padding: .55rem .62rem; }
+}
+@media (prefers-reduced-motion: reduce) { path.celebrate { animation: none; } }
+
+/* Short transitions preserve the map’s position and keep controls responsive. */
+@media (prefers-reduced-motion: no-preference) {
+  .home:not([hidden]), .play:not([hidden]) { animation: enter-fade 240ms ease-out both; }
+  .home:not([hidden]) .hero-copy { animation: enter-rise 320ms ease-out both; }
+  dialog[open] { animation: dialog-enter 230ms cubic-bezier(.2,.75,.25,1) both; }
+  dialog[open]::backdrop { animation: enter-fade 200ms ease-out both; }
+  .progress[open] .progress-body, #province-progress[open] #progress-list,
+  .guess-panel:not([hidden]), #results:not([hidden]), .notice:not([hidden]) {
+    animation: enter-rise 180ms ease-out both;
+  }
+  button { transition: filter 150ms ease, background-color 150ms ease; }
+  path.map-shape { animation: enter-fade 240ms ease-out; transition: fill 190ms ease, fill-opacity 190ms ease, stroke 190ms ease; }
+  path.map-shape.hinted { animation: hint-pulse 400ms ease-out; }
+  path.map-shape.celebrate { animation: glow .8s ease-out; }
+  .clue-reveal { display: inline-block; animation: letter-in 260ms cubic-bezier(.2,.8,.25,1) both; }
+}
+.clue-tile { display: inline-block; min-width: 1ch; text-align: center; margin-inline-end: .16em; white-space: pre; }
+.leaflet-control-attribution:empty { display: none; }
+@keyframes enter-fade { from { opacity: 0; } to { opacity: 1; } }
+@keyframes enter-rise { from { opacity: 0; transform: translateY(6px); } to { opacity: 1; transform: translateY(0); } }
+@keyframes dialog-enter { from { opacity: 0; transform: translateY(9px) scale(.98); } to { opacity: 1; transform: translateY(0) scale(1); } }
+@keyframes letter-in { from { opacity: 0; transform: translateY(5px) scale(.85); } to { opacity: 1; transform: translateY(0) scale(1); } }
+@keyframes hint-pulse { from { filter: drop-shadow(0 0 8px #ffd47b); } }
+
+button.contrast { background: #f3ce81; }
+.race-clock { margin-inline-start: .5rem; padding-inline-start: .5rem; border-inline-start: 1px solid var(--edge); font-size: .875rem; }
+.race-clock [role="timer"] { color: var(--accent); font-weight: 750; font-variant-numeric: tabular-nums; }
+.race-clock.low-time [role="timer"] { color: #ffc385; }
+.race-ready { display: flex; align-items: center; justify-content: space-between; gap: .65rem; }
+.race-ready p { margin: .2rem; font-weight: 700; }
+.race-results { margin: .5rem 0; }
+.race-results dd { margin: 0; font-weight: 700; }
+.race-results .metric { border-bottom: 1px solid var(--edge); }
+
+#map .leaflet-control-zoom {
+  margin: 0 0 max(.75rem, env(safe-area-inset-bottom)) .75rem;
+  border: 1px solid var(--edge);
+  border-radius: .7rem;
+  background: var(--glass);
+  box-shadow: 0 .4rem 1.4rem #08191260;
+}
+
+#map .leaflet-control-zoom a {
+  display: grid;
+  place-items: center;
+  width: 2.625rem;
+  height: 2.625rem;
+  border: 0;
+  background: transparent;
+  color: var(--accent);
+  font: 650 1.35rem/1 "Segoe UI", system-ui, sans-serif;
+}
+
+#map .leaflet-control-zoom a:first-child {
+  border-bottom: 1px solid var(--edge);
+  border-radius: .65rem .65rem 0 0;
+}
+
+#map .leaflet-control-zoom a:last-child { border-radius: 0 0 .65rem .65rem; }
+#map .leaflet-control-zoom a:not(.leaflet-disabled):hover { background: #365648; }
+#map .leaflet-control-zoom a:focus-visible { outline: 2px solid #f8d076; outline-offset: -3px; }
+#map .leaflet-control-zoom a.leaflet-disabled { color: var(--muted); opacity: .55; }

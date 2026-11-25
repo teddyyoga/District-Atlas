@@ -1,0 +1,127 @@
+<!doctype html>
+<html lang="tr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>İlçe Atlası</title>
+<link rel="stylesheet" href="vendor/leaflet/leaflet.css">
+<link rel="stylesheet" href="css/styles.css">
+<script defer src="vendor/leaflet/leaflet.js"></script>
+<script defer src="vendor/turf/turf.min.js"></script>
+<script defer src="js/storage.js"></script>
+<script defer src="js/game.js"></script>
+<script defer src="js/map.js"></script>
+<script defer src="js/language.js"></script>
+<script defer src="js/app.js"></script>
+</head>
+<body>
+<main>
+<section id="home" class="home">
+  <header class="home-header"><span class="wordmark" data-text="brand">İlçe Atlası</span><button id="settings-button" class="ghost" data-text="settings">Ayarlar</button></header>
+  <div class="hero">
+    <div class="hero-copy">
+      <h1 data-text="headline">Türkiye’nin ilçelerini keşfet</h1>
+      <p data-text="intro">Haritadan bir il seç, ilçelerini tahmin et ve ilerlemeni takip et.</p>
+      <div class="hero-actions">
+        <button id="start" data-text="start">Serbest Oyun</button>
+        <button id="challenge" class="contrast" data-text="challenge">60 Saniye Yarışı</button>
+        <button id="rules-button" class="ghost" data-text="rules">Nasıl Oynanır?</button>
+      </div>
+    </div>
+    <div class="hero-map" aria-hidden="true"><img src="data/turkiye.svg" alt=""></div>
+  </div>
+  <footer class="home-footer"><a href="https://github.com/ttezer/turkiye-harita-verisi" target="_blank" rel="noopener" data-text="source">Harita verisi</a></footer>
+</section>
+<section id="play" class="play" hidden>
+  <div id="map" data-label="map" aria-label="Türkiye il ve ilçe sınırları"></div>
+  <div class="top-left">
+    <button id="home-button" class="glass" data-text="home">Ana Sayfa</button>
+    <button id="back" class="glass" data-text="turkey" hidden>Türkiye Haritası</button>
+    <p id="map-status" class="glass notice" role="status" hidden></p>
+  </div>
+  <details id="progress" class="glass progress">
+    <summary><span data-text="progress">İlerleme</span><strong id="summary">—</strong><span id="race-clock" class="race-clock" hidden><span id="race-time" role="timer" data-label="timeLeft">1:00</span></span></summary>
+    <div class="progress-body">
+      <div id="free-score" class="metric"><span data-text="total">Toplam puan</span><strong id="total">0</strong></div>
+      <section id="province-stats" hidden>
+        <h2 id="title"></h2>
+        <div class="metric"><span data-text="found">Bulunan ilçe</span><strong id="count">0</strong></div>
+        <div class="metric"><span data-text="points">İl puanı</span><strong id="points">0</strong></div>
+        <div class="metric"><span data-text="area">Alan kapsaması</span><strong id="area">%0</strong></div>
+        <progress id="coverage" max="100" value="0" data-label="area"></progress>
+      </section>
+      <details id="province-progress">
+        <summary id="province-progress-label" data-text="byProvince">İllere göre ilerleme</summary>
+        <ul id="progress-list"></ul>
+      </details>
+      <p id="storage-note" role="status" data-text="storage" hidden>Tarayıcı ilerlemeyi kaydedemiyor.</p>
+    </div>
+  </details>
+  <div class="bottom-dock">
+    <section id="game" class="glass guess-panel" hidden>
+      <div id="race-ready" class="race-ready" hidden>
+        <p id="race-province"></p>
+        <button id="race-start" disabled data-text="raceStart">Yarışı Başlat</button>
+      </div>
+      <div id="guess-row" class="guess-row">
+        <input id="guess" data-label="guess" data-placeholder="guess" autocomplete="off" autocapitalize="off" spellcheck="false">
+        <button id="hint" data-text="hint">İpucu al</button>
+      </div>
+      <p id="feedback" role="status"></p>
+      <p id="clue" aria-live="polite"></p>
+    </section>
+    <div class="glass search-panel">
+      <ul id="results" hidden></ul>
+      <input id="province" type="search" autocomplete="off" data-label="search" data-placeholder="search" aria-controls="results" disabled>
+    </div>
+    <div id="legend" class="legend">
+      <span><i class="ready"></i><span data-text="ready">Oynanabilir</span></span>
+      <span><i class="started"></i><span data-text="started">Devam ediyor</span></span>
+      <span><i class="done"></i><span data-text="done">Tamamlandı</span></span>
+      <span><i class="unavailable"></i><span data-text="unavailable">Henüz eklenmedi</span></span>
+    </div>
+  </div>
+</section>
+</main>
+<dialog id="rules-dialog" aria-labelledby="rules-title">
+  <form method="dialog">
+    <h2 id="rules-title" data-text="rules">Nasıl Oynanır?</h2>
+    <ol>
+      <li data-text="rule1">Haritadan bir il seç veya alttaki arama çubuğunu kullan.</li>
+      <li data-text="rule2">İlçe adını yaz. Doğru tahmin Enter’a basmadan işlenir. Türkçe karakterler isteğe bağlıdır.</li>
+      <li data-text="rule3">İpuçları sırayla ilçenin konumunu, harf sayısını ve rastgele harfleri gösterir.</li>
+      <li data-text="rule4">Her doğru tahmin 100 puan kazandırır. Her ipucu 15 puan düşürür. En düşük puan 10’dur.</li>
+      <li data-text="rule5">Haritanın sağ üstündeki İlerleme bölümünden alan kapsamasını ve ilçe sayısını takip edebilirsin.</li>
+      <li data-text="raceRule">60 Saniye Yarışı’nda süre Yarışı Başlat düğmesiyle başlar ve ipucu alırken de işler. Her ilin rekoru ayrı saklanır.</li>
+    </ol>
+    <button data-text="close">Kapat</button>
+  </form>
+</dialog>
+<dialog id="race-dialog" aria-labelledby="race-result-title">
+  <form method="dialog">
+    <h2 id="race-result-title" data-text="raceResult">Yarış Sonucu</h2>
+    <p id="race-result-province"></p>
+    <p id="race-result-status" role="status"></p>
+    <dl class="race-results">
+      <div class="metric"><dt data-text="found">Bulunan ilçe</dt><dd id="race-result-count"></dd></div>
+      <div class="metric"><dt data-text="area">Alan kapsaması</dt><dd id="race-result-area"></dd></div>
+      <div class="metric"><dt data-text="raceScore">Yarış puanı</dt><dd id="race-result-score"></dd></div>
+      <div class="metric"><dt data-text="best">İl rekoru</dt><dd id="race-result-best"></dd></div>
+    </dl>
+    <div class="hero-actions">
+      <button id="race-retry" type="button" data-text="retry">Tekrar Yarış</button>
+      <button id="race-change" type="button" class="ghost" data-text="changeProvince">İl Değiştir</button>
+      <button class="ghost" data-text="close">Kapat</button>
+    </div>
+  </form>
+</dialog>
+<dialog id="settings-dialog" aria-labelledby="settings-title">
+  <form method="dialog">
+    <h2 id="settings-title" data-text="settings">Ayarlar</h2>
+    <label for="language" data-text="language">Arayüz dili</label>
+    <select id="language"><option value="tr">Türkçe</option><option value="en">English</option></select>
+    <button data-text="close">Kapat</button>
+  </form>
+</dialog>
+</body>
+</html>
