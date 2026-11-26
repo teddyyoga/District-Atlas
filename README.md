@@ -2,12 +2,12 @@
 
 **GMT 458 Web GIS · Assignment 2 GeoGame**
 
-İlçe Atlası is a browser-based geography game about Türkiye’s administrative districts. Choose a province, use its district boundaries as spatial clues, and type the names you recognize. Correct guesses reveal and label the corresponding polygons. The national map shows all 81 provinces, with 18 playable in the current version. The interface is available in Turkish and English. Players can explore at their own pace in **Free Play** or compete for a province record in the **60-Second Challenge**.
+İlçe Atlası is a browser-based geography game about Türkiye’s administrative districts. Choose a province, use its district boundaries as spatial clues, and type the names you recognize. Correct guesses reveal and label the corresponding polygons. All 81 provinces on the national map are playable. The interface is available in Turkish and English. Players can explore at their own pace in **Free Play** or compete for a province record in the **60-Second Challenge**.
 
 ## Functional requirements
 
 - Provide a home screen with **Free Play**, **60-Second Challenge**, **How to Play**, and **Settings**. Save the selected interface language in the browser.
-- Display an interactive, unlabeled map. Let players choose a playable province by clicking it or by searching for its name. Identify unavailable provinces on the map.
+- Display an interactive, unlabeled map. Let players choose a playable province by clicking it or by searching for its name.
 - Draw the selected province’s district boundaries and accept correct names as the player types, without requiring Enter. Accept spellings without Turkish diacritics. Fill and label the matching polygon after a correct guess.
 - Offer progressive hints, calculate scores and area coverage, and summarize progress across playable provinces.
 - Save guesses, hints, scores, and the active province in browser storage. Allow each province to be reset independently.
@@ -32,7 +32,7 @@
 
 ```text
 +------------------------------------------------------------+
-| [Home] [Türkiye Map]                     [Progress   2/18] |
+| [Home] [Türkiye Map]                     [Progress   2/81] |
 |                                          +---------------+ |
 |                                          | Total score   | |
 |          Full-window interactive map     | Province stats| |
@@ -53,7 +53,7 @@ The progress panel expands on request. The district input and hint controls appe
 3. If you need help, request a hint. It highlights a randomly chosen, unguessed district. The next hint shows its letter count, and each further hint reveals a random remaining letter.
 4. Find every district to complete the province. You can switch provinces whenever you like and return to your saved progress. Provinces vary in size and number of districts, so players choose their own difficulty.
 
-**Tasks and lives.** There are 342 district-name tasks across 18 playable provinces, ranging from 9 districts in Gaziantep to 39 in İstanbul. The game has no lives. Incorrect guesses do not subtract points or limit attempts.
+**Tasks and lives.** There are 973 district-name tasks across all 81 playable provinces. The game has no lives. Incorrect guesses do not subtract points or limit attempts.
 
 **Scoring and high scores.** A district earns 100 points without hints. Each hint used for that district deducts 15 points, with a minimum of 10 points. A correct guess scores once per district until its province is reset. Free Play saves cumulative and province scores. The 60-Second Challenge uses the same scoring rules and saves the highest completed-round score separately for each province. A tie keeps the previous record. Challenge scores and guesses are separate from Free Play. The results show the round score, province best, districts found, and area coverage.
 
