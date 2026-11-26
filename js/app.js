@@ -33,7 +33,8 @@ function loadLocalData(path) {
 
 async function fetchData(path) {
   if (location.protocol === 'file:') return loadLocalData(path);
-  const response = await fetch(path);
+  // Bump the version when the published GeoJSON changes.
+  const response = await fetch(path + '?v=81-provinces', { cache: 'no-cache' });
   if (!response.ok) throw new Error(path + ' · ' + response.status);
   return response.json();
 }
