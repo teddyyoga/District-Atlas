@@ -2,11 +2,11 @@
 
 **GMT 458 Web GIS · Assignment 2 GeoGame**
 
-İlçe Atlası is a browser-based geography game about Türkiye’s administrative districts. Choose a province, use its district boundaries as spatial clues, and type the names you recognize. Correct guesses reveal and label the corresponding polygons. All 81 provinces on the national map are playable. The interface is available in Turkish and English. Players can explore at their own pace in **Free Play** or compete for a province record in the **60-Second Challenge**.
+İlçe Atlası is a browser-based geography game about Türkiye’s administrative districts. Choose a province, use its district boundaries as spatial clues, and type the names you recognize. Correct guesses reveal and label the corresponding polygons. All 81 provinces on the national map are playable. The interface is available in Turkish and English. Players can explore at their own pace in **Free Play** or compete for a province record in the **Race Mode**.
 
 ## Functional requirements
 
-- Provide a home screen with **Free Play**, **60-Second Challenge**, **How to Play**, and **Settings**. Save the selected interface language in the browser.
+- Provide a home screen with **Free Play**, **Race Mode**, **How to Play**, and **Settings**. Save the selected interface language in the browser.
 - Display an interactive, unlabeled map. Let players choose a playable province by clicking it or by searching for its name.
 - Draw the selected province’s district boundaries and accept correct names as the player types, without requiring Enter. Accept spellings without Turkish diacritics. Fill and label the matching polygon after a correct guess.
 - Offer progressive hints, calculate scores and area coverage, and summarize progress across playable provinces.
@@ -22,7 +22,7 @@
 |                                                            |
 | Explore Türkiye's districts.        +-------------------+  |
 |                                     |   Türkiye map     |  |
-| [Free Play] [60-Second Challenge]          |   illustration    |  |
+| [Free Play] [Race Mode]               |   illustration    |  |
 |                                     +-------------------+  |
 | Map data                                                   |
 +------------------------------------------------------------+
@@ -55,16 +55,22 @@ The progress panel expands on request. The district input and hint controls appe
 
 **Tasks and lives.** There are 973 district-name tasks across all 81 playable provinces. The game has no lives. Incorrect guesses do not subtract points or limit attempts.
 
-**Scoring and high scores.** A district earns 100 points without hints. Each hint used for that district deducts 15 points, with a minimum of 10 points. A correct guess scores once per district until its province is reset. Free Play saves cumulative and province scores. The 60-Second Challenge uses the same scoring rules and saves the highest completed-round score separately for each province. A tie keeps the previous record. Challenge scores and guesses are separate from Free Play. The results show the round score, province best, districts found, and area coverage.
+**Scoring and high scores.** A district earns 100 points without hints. Each hint used for that district deducts 15 points, with a minimum of 10 points. A correct guess scores once per district until its province is reset. Free Play saves cumulative and province scores. The Race Mode uses the same scoring rules and saves the highest completed-round score separately for each province and difficulty. A tie keeps the previous record. Challenge scores and guesses are separate from Free Play. The results show the round score, province best, districts found, and area coverage.
 
-## 60-Second Challenge
+## Race Mode
 
-Choose **60-Second Challenge** on the home screen, select a province, and choose **Start Round** after the map finishes loading and zooming.
+Choose **Race Mode** on the home screen, select a province, choose a difficulty, then select **Start Round** after the map finishes loading and zooming. The province’s district count determines the time limit.
 
-- Each round starts with all districts unguessed. The clock begins at 1:00 and keeps running while you use hints or switch browser tabs.
+| Districts in the province | Hard | Medium | Easy |
+| --- | --- | --- | --- |
+| 1–10 | 1:00 | 2:00 | 5:00 |
+| 11–25 | 2:00 | 3:00 | 6:00 |
+| 26 or more | 3:00 | 4:00 | 7:00 |
+
+- Each round starts with all districts unguessed. The clock starts at the selected time limit and keeps running while you use hints or switch browser tabs.
 - The round ends at 0:00 or as soon as all districts are found. Only guesses accepted before the deadline score points.
 - A correct answer starts at 100 points. Each hint for that district costs 15 points, with a minimum of 10. Incorrect guesses carry no point penalty.
-- The results show districts found, area coverage, round score, and the province record. A higher finished-round score replaces the browser’s saved record for that province.
+- The results show districts found, area coverage, round score, and the province record. A higher finished-round score replaces the browser’s saved record for that province and difficulty. Records from the previous fixed 60-second mode remain visible separately.
 - Leaving or refreshing during a round discards that round. Challenge records are stored separately from untimed **Free Play** progress.
 
 ## Web GIS and JavaScript libraries

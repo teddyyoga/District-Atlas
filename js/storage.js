@@ -1,5 +1,5 @@
 const key = 'ilce-tahmin-v1';
-const emptyState = () => ({ active: null, provinces: {}, bestScores: {} });
+const emptyState = () => ({ active: null, provinces: {}, bestScores: {}, raceRecords: {} });
 function loadState() {
   try {
     const saved = JSON.parse(localStorage.getItem(key));

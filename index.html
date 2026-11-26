@@ -8,11 +8,11 @@
 <link rel="stylesheet" href="css/styles.css">
 <script defer src="vendor/leaflet/leaflet.js"></script>
 <script defer src="vendor/turf/turf.min.js"></script>
-<script defer src="js/storage.js"></script>
-<script defer src="js/game.js"></script>
+<script defer src="js/storage.js?v=race-mode"></script>
+<script defer src="js/game.js?v=race-mode"></script>
 <script defer src="js/map.js"></script>
-<script defer src="js/language.js"></script>
-<script defer src="js/app.js?v=81-provinces"></script>
+<script defer src="js/language.js?v=race-mode"></script>
+<script defer src="js/app.js?v=race-mode"></script>
 </head>
 <body>
 <main>
@@ -24,7 +24,7 @@
       <p data-text="intro">Haritadan bir il seç, ilçelerini tahmin et ve ilerlemeni takip et.</p>
       <div class="hero-actions">
         <button id="start" data-text="start">Serbest Oyun</button>
-        <button id="challenge" class="contrast" data-text="challenge">60 Saniye Yarışı</button>
+        <button id="challenge" class="contrast" data-text="challenge">Yarış Modu</button>
         <button id="rules-button" class="ghost" data-text="rules">Nasıl Oynanır?</button>
       </div>
     </div>
@@ -61,6 +61,10 @@
     <section id="game" class="glass guess-panel" hidden>
       <div id="race-ready" class="race-ready" hidden>
         <p id="race-province"></p>
+        <div id="race-options">
+          <label for="race-difficulty" data-text="difficulty">Zorluk</label>
+          <select id="race-difficulty"></select>
+        </div>
         <button id="race-start" disabled data-text="raceStart">Yarışı Başlat</button>
       </div>
       <div id="guess-row" class="guess-row">
@@ -91,7 +95,7 @@
       <li data-text="rule3">İpuçları sırayla ilçenin konumunu, harf sayısını ve rastgele harfleri gösterir.</li>
       <li data-text="rule4">Her doğru tahmin 100 puan kazandırır. Her ipucu 15 puan düşürür. En düşük puan 10’dur.</li>
       <li data-text="rule5">Haritanın sağ üstündeki İlerleme bölümünden alan kapsamasını ve ilçe sayısını takip edebilirsin.</li>
-      <li data-text="raceRule">60 Saniye Yarışı’nda süre Yarışı Başlat düğmesiyle başlar ve ipucu alırken de işler. Her ilin rekoru ayrı saklanır.</li>
+      <li data-text="raceRule">Yarış Modu’nda bir il ve zorluk seç. Sayaç Yarışı Başlat düğmesiyle başlar ve ipucu alırken de işler. Rekorlar il ve zorluk bazında saklanır.</li>
     </ol>
     <button data-text="close">Kapat</button>
   </form>

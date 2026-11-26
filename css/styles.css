@@ -108,7 +108,11 @@ button.contrast { background: #f3ce81; }
 .race-clock { margin-inline-start: .5rem; padding-inline-start: .5rem; border-inline-start: 1px solid var(--edge); font-size: .875rem; }
 .race-clock [role="timer"] { color: var(--accent); font-weight: 750; font-variant-numeric: tabular-nums; }
 .race-clock.low-time [role="timer"] { color: #ffc385; }
-.race-ready { display: flex; align-items: center; justify-content: space-between; gap: .65rem; }
+.race-ready { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: .55rem; }
+.race-ready #race-options { display: flex; align-items: center; flex-wrap: wrap; gap: .4rem; }
+.race-ready select { max-width: 100%; }
+#progress-list li.race-record { display: grid; grid-template-columns: 1fr; gap: .15rem; padding: .3rem 0; }
+.race-record .percent { font-size: .83rem; }
 .race-ready p { margin: .2rem; font-weight: 700; }
 .race-results { margin: .5rem 0; }
 .race-results dd { margin: 0; font-weight: 700; }

@@ -3,6 +3,14 @@ function normalize(value) {
     .replace(/\p{Mark}/gu, '').replace(/ı/g, 'i').replace(/[^a-z0-9]/g, '');
 }
 
+const raceDifficulties = ['hard', 'medium', 'easy'];
+
+function raceDuration(districtCount, difficulty) {
+  const baseMinutes = { hard: 1, medium: 2, easy: 5 };
+  const provinceTier = districtCount <= 10 ? 0 : districtCount <= 25 ? 1 : 2;
+  return (baseMinutes[difficulty] + provinceTier) * 60;
+}
+
 const newProgress = () => ({ found: {}, hint: null });
 
 function pointsForHint(hint) {
