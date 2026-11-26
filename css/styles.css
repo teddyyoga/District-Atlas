@@ -66,6 +66,21 @@ dialog::backdrop { background: #071411bc; }
 dialog h2 { font: 2rem Georgia, serif; margin: 0 0 1rem; }
 dialog li { margin: .5rem 0; line-height: 1.5; }
 dialog label, dialog select { display: block; margin-bottom: .65rem; }
+#map .province-shape {
+  transform-box: fill-box;
+  transform-origin: center;
+}
+@media (hover: hover) and (pointer: fine) {
+  #map .province-shape:hover {
+    filter: drop-shadow(0 2px 4px #081912a8);
+  }
+}
+@media (hover: hover) and (pointer: fine) and (prefers-reduced-motion: no-preference) {
+  #map .province-shape {
+    transition: transform 160ms ease-out, filter 160ms ease-out;
+  }
+  #map .province-shape:hover { transform: scale(1.025); }
+}
 #map .leaflet-tooltip.province-name {
   padding: .4rem .65rem;
   background: var(--glass);

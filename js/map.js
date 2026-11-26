@@ -48,6 +48,8 @@ function createMap(element) {
       districtLayers.clear();
       show(data, feature => ({ ...styles[status(feature.properties)], weight: 1 }), (feature, path) => {
         const province = feature.properties;
+        path.options.className += ' province-shape';
+        path.on('mouseover', () => path.bringToFront());
         const label = document.createElement('span');
         label.textContent = province.name + (province.districtCount ? '' : ' · ' + translate('unavailable'));
         path.bindTooltip(label, { sticky: true, className: 'province-name', opacity: 1 });
