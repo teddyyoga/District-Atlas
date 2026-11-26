@@ -66,6 +66,19 @@ dialog::backdrop { background: #071411bc; }
 dialog h2 { font: 2rem Georgia, serif; margin: 0 0 1rem; }
 dialog li { margin: .5rem 0; line-height: 1.5; }
 dialog label, dialog select { display: block; margin-bottom: .65rem; }
+#map .leaflet-tooltip.province-name {
+  padding: .4rem .65rem;
+  background: var(--glass);
+  border: 1px solid var(--edge);
+  border-radius: .55rem;
+  color: var(--accent);
+  box-shadow: 0 .3rem .85rem #08191280;
+  font: 700 .9rem/1.25 "Segoe UI", system-ui, sans-serif;
+}
+#map .leaflet-tooltip.province-name::before { display: none; }
+@media (prefers-reduced-motion: no-preference) {
+  #map .leaflet-tooltip.province-name { animation: enter-fade 140ms ease-out; }
+}
 .leaflet-tooltip.district-name { background: #17352b; border: 1px solid #8abe7d; color: #f4ffe1; font: 650 .78rem system-ui, sans-serif; }
 .leaflet-tooltip.district-name::before { display: none; }
 path.celebrate { animation: glow .8s ease-out; }

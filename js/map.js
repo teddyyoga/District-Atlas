@@ -50,7 +50,7 @@ function createMap(element) {
         const province = feature.properties;
         const label = document.createElement('span');
         label.textContent = province.name + (province.districtCount ? '' : ' · ' + translate('unavailable'));
-        path.bindTooltip(label, { sticky: true });
+        path.bindTooltip(label, { sticky: true, className: 'province-name', opacity: 1 });
         path.on('click', () => province.districtCount ? choose(province.id) : path.openTooltip());
       }, 26, animate);
     },
