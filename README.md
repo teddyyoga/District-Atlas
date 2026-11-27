@@ -77,7 +77,7 @@ Choose **Play → Race Mode**, select a puzzle type and a province, choose a dif
 
 Choose **Play**, then **Free Play** for an untimed round or **Race Mode** for a timed round. Select **Find on the Map** and pick a province. The game shuffles the province’s districts and asks each one once. Select the district polygon by clicking, tapping, or focusing it and pressing Enter or Space. Wrong choices flash red. Correct choices turn green and reveal the district name.
 
-The first hint gives an approximate compass direction. The second highlights three possible districts when enough unresolved choices remain. A correct answer earns 100, 75, 50, or 25 points based on the number of distinct wrong choices. Each hint deducts 15 points and a correct answer always earns at least 10. Skip briefly reveals the correct polygon for zero points.
+The first hint gives an approximate compass direction. The second highlights three possible districts when enough unresolved choices remain. A correct answer earns 100, 75, 50, or 25 points based on the number of distinct wrong choices. Each hint deducts 15 points and a correct answer always earns at least 10. Skip briefly highlights the correct polygon for zero points. The skipped district stays gray and labeled for the rest of the round.
 
 Timed rounds use the Race Mode time limits. The results report score, districts found, area coverage, and the province record. Browser records are kept separately from typed-answer scores, with an untimed record and a timed record for each difficulty.
 

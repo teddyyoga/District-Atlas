@@ -5,6 +5,7 @@ const styles = {
   done: { color: '#a6ffe2', fillColor: '#95cc6a', fillOpacity: .8 },
   blank: { color: '#96b3cd', fillColor: '#263d58', fillOpacity: 0 },
   missed: { color: '#f3ae99', fillColor: '#b95248', fillOpacity: .72 },
+  skipped: { color: '#9ca9a5', fillColor: '#65706d', fillOpacity: .82 },
   revealed: { color: '#ffe4ab', fillColor: '#e4a54c', fillOpacity: .7 },
   hint: { color: '#ffe499', fillColor: '#f2c252', fillOpacity: .68 },
 };
@@ -84,8 +85,16 @@ function createMap(element) {
     paintDistrict(district, found, hinted, celebrate, marked) {
       const path = districtLayers.get(district.id);
       path.setStyle(styles[marked ?? (found ? 'done' : hinted ? 'hint' : 'blank')]);
-      path.getElement()?.classList.toggle('hinted', hinted && !found);
-      if (!found) {
+      const shape = path.getElement();
+      shape?.classList.toggle('hinted', hinted && !found);
+      const skipped = marked === 'skipped';
+      const unavailable = skipped || marked === 'revealed';
+      if (shape?.classList.contains('district-choice')) {
+        shape.classList.toggle('district-unavailable', unavailable);
+        shape.setAttribute('tabindex', unavailable ? '-1' : '0');
+        shape.setAttribute('aria-disabled', String(unavailable));
+      }
+      if (!found && !skipped) {
         if (path.getTooltip()) path.unbindTooltip();
         return;
       }
@@ -93,10 +102,10 @@ function createMap(element) {
       const label = document.createElement('span');
       label.textContent = district.name;
       const anchor = turf.pointOnFeature(path.feature).geometry.coordinates;
-      path.bindTooltip(label, { permanent: true, direction: 'center', className: 'district-name' })
+      const className = skipped ? 'district-name skipped-name' : 'district-name';
+      path.bindTooltip(label, { permanent: true, direction: 'center', className })
         .openTooltip([anchor[1], anchor[0]]);
       if (celebrate) {
-        const shape = path.getElement();
         shape?.classList.add('celebrate');
         setTimeout(() => shape?.classList.remove('celebrate'), 850);
       }

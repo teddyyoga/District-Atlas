@@ -96,6 +96,7 @@ dialog label, dialog select { display: block; margin-bottom: .65rem; }
 }
 .leaflet-tooltip.district-name { background: #17352b; border: 1px solid #8abe7d; color: #f4ffe1; font: 650 .78rem system-ui, sans-serif; }
 .leaflet-tooltip.district-name::before { display: none; }
+.leaflet-tooltip.district-name.skipped-name { background: #343e3b; border-color: #919d98; color: #f0f3f0; }
 path.celebrate { animation: glow .8s ease-out; }
 @keyframes glow { from { filter: drop-shadow(0 0 7px #d3ff9b); fill-opacity: 1; } }
 @media (max-width: 720px) {
@@ -176,6 +177,7 @@ button.contrast { background: #f3ce81; }
 #map .leaflet-control-zoom a.leaflet-disabled { color: var(--muted); opacity: .55; }
 
 .district-choice { cursor: pointer; }
+#map .district-choice.district-unavailable { pointer-events: none; }
 .district-choice:hover, .district-choice:focus-visible { stroke: #d4efb4; stroke-width: 2; }
 .play-choices, .play-dialog-footer { display: flex; flex-wrap: wrap; gap: .55rem; }
 .play-dialog-footer { margin-top: 1rem; }

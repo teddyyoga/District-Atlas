@@ -233,6 +233,7 @@ function renderGame(celebrateId) {
   for (const district of districts) {
     const question = round?.mapQuestion;
     const marked = question?.revealing && question.target.id === district.id ? 'revealed'
+      : round?.skipped?.has(district.id) ? 'skipped'
       : question?.lastWrong === district.id ? 'missed' : undefined;
     map.paintDistrict(district, owns(progress, district.id),
       hint?.id === district.id || Boolean(question?.candidates.includes(district.id)),
