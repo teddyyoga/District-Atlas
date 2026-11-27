@@ -73,6 +73,14 @@ Choose **Race Mode** on the home screen, select a province, choose a difficulty,
 - The results show districts found, area coverage, round score, and the province record. A higher finished-round score replaces the browser’s saved record for that province and difficulty. Records from the previous fixed 60-second mode remain visible separately.
 - Leaving or refreshing during a round discards that round. Challenge records are stored separately from untimed **Free Play** progress.
 
+## Find on the Map
+
+Pick a province and choose Untimed or Timed. The game shuffles the province’s districts and asks each one once. Select the district polygon by clicking, tapping, or focusing it and pressing Enter or Space. Wrong choices flash red. Correct choices turn green and reveal the district name.
+
+The first hint gives an approximate compass direction. The second highlights three possible districts when enough unresolved choices remain. A correct answer earns 100, 75, 50, or 25 points based on the number of distinct wrong choices. Each hint deducts 15 points and a correct answer always earns at least 10. Skip briefly reveals the correct polygon for zero points.
+
+Timed rounds use the Race Mode time limits. The results report score, districts found, area coverage, and the province record. Browser records are kept separately from typed-answer scores, with an untimed record and a timed record for each difficulty.
+
 ## Web GIS and JavaScript libraries
 
 | Technology | Use |

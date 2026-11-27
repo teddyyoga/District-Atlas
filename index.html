@@ -5,14 +5,14 @@
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>İlçe Atlası</title>
 <link rel="stylesheet" href="vendor/leaflet/leaflet.css">
-<link rel="stylesheet" href="css/styles.css?v=province-hover">
+<link rel="stylesheet" href="css/styles.css?v=map-quiz">
 <script defer src="vendor/leaflet/leaflet.js"></script>
 <script defer src="vendor/turf/turf.min.js"></script>
-<script defer src="js/storage.js?v=race-mode"></script>
-<script defer src="js/game.js?v=race-mode"></script>
-<script defer src="js/map.js?v=province-hover"></script>
-<script defer src="js/language.js?v=race-mode"></script>
-<script defer src="js/app.js?v=race-mode"></script>
+<script defer src="js/storage.js?v=map-quiz"></script>
+<script defer src="js/game.js?v=map-quiz"></script>
+<script defer src="js/map.js?v=map-quiz"></script>
+<script defer src="js/language.js?v=map-quiz"></script>
+<script defer src="js/app.js?v=map-quiz"></script>
 </head>
 <body>
 <main>
@@ -25,6 +25,7 @@
       <div class="hero-actions">
         <button id="start" data-text="start">Serbest Oyun</button>
         <button id="challenge" class="contrast" data-text="challenge">Yarış Modu</button>
+        <button id="map-quiz" data-text="mapQuiz">Haritada Bul</button>
         <button id="rules-button" class="ghost" data-text="rules">Nasıl Oynanır?</button>
       </div>
     </div>
@@ -61,12 +62,31 @@
     <section id="game" class="glass guess-panel" hidden>
       <div id="race-ready" class="race-ready" hidden>
         <p id="race-province"></p>
+        <div id="map-quiz-options" hidden>
+          <label for="map-quiz-type" data-text="playType">Oyun biçimi</label>
+          <select id="map-quiz-type">
+            <option value="untimed" data-text="untimed">Süresiz</option>
+            <option value="timed" data-text="timed">Süreli</option>
+          </select>
+        </div>
         <div id="race-options">
           <label for="race-difficulty" data-text="difficulty">Zorluk</label>
           <select id="race-difficulty"></select>
         </div>
         <button id="race-start" disabled data-text="raceStart">Yarışı Başlat</button>
       </div>
+      <section id="map-question" class="map-question" hidden>
+        <div>
+          <small id="map-question-count"></small>
+          <h2 id="map-question-title" tabindex="-1" aria-live="polite"></h2>
+        </div>
+        <div class="map-question-actions">
+          <button id="map-hint" data-text="hint">İpucu al</button>
+          <button id="map-skip" class="ghost" data-text="skip">Pas geç</button>
+        </div>
+      </section>
+      <p id="map-feedback" class="map-feedback" role="status" hidden></p>
+      <p id="map-clue" class="map-clue" aria-live="polite" hidden></p>
       <div id="guess-row" class="guess-row">
         <input id="guess" data-label="guess" data-placeholder="guess" autocomplete="off" autocapitalize="off" spellcheck="false">
         <button id="hint" data-text="hint">İpucu al</button>
@@ -95,6 +115,7 @@
       <li data-text="rule3">İpuçları sırayla ilçenin konumunu, harf sayısını ve rastgele harfleri gösterir.</li>
       <li data-text="rule4">Her doğru tahmin 100 puan kazandırır. Her ipucu 15 puan düşürür. En düşük puan 10’dur.</li>
       <li data-text="rule5">Haritanın sağ üstündeki İlerleme bölümünden alan kapsamasını ve ilçe sayısını takip edebilirsin.</li>
+      <li data-text="mapRule">Haritada Bul modunda adı verilen ilçeye tıkla. Yanlış seçimler ve ipuçları puanı azaltır. Pas geçince doğru ilçe gösterilir.</li>
       <li data-text="raceRule">Yarış Modu’nda bir il ve zorluk seç. Sayaç Yarışı Başlat düğmesiyle başlar ve ipucu alırken de işler. Rekorlar il ve zorluk bazında saklanır.</li>
     </ol>
     <button data-text="close">Kapat</button>

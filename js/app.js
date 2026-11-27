@@ -6,6 +6,9 @@ let request = 0;
 let guessTimer;
 let playable = [];
 let challengeMode = false;
+let mapQuiz = false;
+let mapQuizTimed = false;
+let mapNextTimer;
 let round = null;
 let roundTimer;
 let selectedDifficulty = 'medium';
@@ -50,10 +53,18 @@ function status(province) {
   return record && (score(record) || record.hint) ? 'started' : 'ready';
 }
 
+function recordBook() {
+  return mapQuiz ? state.mapRecords : state.raceRecords;
+}
+
+function roundLevel() {
+  return mapQuiz && !mapQuizTimed ? 'untimed' : selectedDifficulty;
+}
+
 function renderRecords() {
-  const records = state.raceRecords;
+  const records = recordBook();
   ui.summary.textContent = active
-    ? (records[active.id]?.[selectedDifficulty] ?? '—')
+    ? (records[active.id]?.[roundLevel()] ?? '—')
     : Object.keys(records).length + ' / ' + playable.length;
   ui['progress-list'].replaceChildren(...playable.map(province => {
     const row = document.createElement('li');
@@ -62,10 +73,11 @@ function renderRecords() {
     const best = document.createElement('span');
     name.textContent = province.name;
     best.className = 'percent';
-    const scores = raceDifficulties.map(difficulty =>
+    const levels = mapQuiz ? ['untimed', ...raceDifficulties] : raceDifficulties;
+    const scores = levels.map(difficulty =>
       translate(difficulty) + ' ' + (records[province.id]?.[difficulty] ?? '—'));
     const legacy = state.bestScores[province.id];
-    if (legacy !== undefined) scores.push(translate('legacyRace') + ' ' + legacy);
+    if (!mapQuiz && legacy !== undefined) scores.push(translate('legacyRace') + ' ' + legacy);
     best.textContent = scores.join(' · ');
     row.append(name, best);
     return row;
@@ -162,12 +174,14 @@ async function openProvince(id, restoring = false) {
     if (challengeMode) {
       progress = newProgress();
       round = { phase: 'ready', deadline: null };
-      ui['race-clock'].hidden = false;
+      ui['race-clock'].hidden = mapQuiz && !mapQuizTimed;
       ui['race-ready'].hidden = false;
-      ui['race-start'].textContent = translate('raceStart');
+      ui['race-start'].textContent = translate(mapQuiz ? 'locateStart' : 'raceStart');
       ui['race-province'].textContent = active.name;
       ui['guess-row'].hidden = true;
-      ui['race-options'].hidden = false;
+      ui['map-quiz-options'].hidden = !mapQuiz;
+      ui['map-quiz-type'].value = mapQuizTimed ? 'timed' : 'untimed';
+      ui['race-options'].hidden = mapQuiz && !mapQuizTimed;
       ui['race-difficulty'].replaceChildren(...raceDifficulties.map(difficulty =>
         new Option(
           translate(difficulty) + ' · ' + timeText(raceDuration(active.districtCount, difficulty)),
@@ -175,6 +189,12 @@ async function openProvince(id, restoring = false) {
         )));
       ui['race-difficulty'].value = selectedDifficulty;
       setClock(raceDuration(active.districtCount, selectedDifficulty));
+      if (mapQuiz) {
+        round.bounds = turf.bbox(data);
+        data.features.forEach((feature, index) => {
+          districts[index].location = turf.pointOnFeature(feature).geometry.coordinates;
+        });
+      }
     } else {
       progress = state.provinces[id] ?? newProgress();
       state.provinces[id] = progress;
@@ -187,7 +207,7 @@ async function openProvince(id, restoring = false) {
     ui.guess.value = ui.feedback.textContent = '';
     map.showDistricts(data, challengeMode ? () => {
       if (token === request && round?.phase === 'ready') ui['race-start'].disabled = false;
-    } : undefined);
+    } : undefined, mapQuiz ? chooseMapDistrict : undefined);
     message('');
     renderGame();
     if (!challengeMode && !restoring && matchMedia('(pointer: fine)').matches) ui.guess.focus();
@@ -213,7 +233,17 @@ function renderGame(celebrateId) {
   const locked = challengeMode && round?.phase !== 'running';
   ui.guess.disabled = locked || completed;
   for (const district of districts) {
-    map.paintDistrict(district, owns(progress, district.id), hint?.id === district.id, celebrateId === district.id);
+    const question = round?.mapQuestion;
+    const marked = question?.revealing && question.target.id === district.id ? 'revealed'
+      : question?.lastWrong === district.id ? 'missed' : undefined;
+    map.paintDistrict(district, owns(progress, district.id),
+      hint?.id === district.id || Boolean(question?.candidates.includes(district.id)),
+      celebrateId === district.id, marked);
+  }
+  if (mapQuiz) {
+    renderMapQuestion();
+    renderRecords();
+    return;
   }
   const target = districts.find(district => district.id === hint?.id);
   const letters = target && clueText(target, hint);
@@ -252,6 +282,98 @@ function renderClue(target, hint) {
   ui.clue.append(...tiles);
 }
 
+function nextMapQuestion(celebrateId) {
+  const target = round.queue.shift();
+  if (!target) {
+    round.mapQuestion = null;
+    finishRound(true);
+    return;
+  }
+  round.asked++;
+  round.mapQuestion = {
+    target, wrong: new Set(), candidates: [], lastWrong: null, hints: 0, revealing: false,
+  };
+  ui['map-clue'].textContent = '';
+  renderGame(celebrateId);
+}
+
+function renderMapQuestion() {
+  const question = round?.mapQuestion;
+  const visible = round?.phase === 'running' && Boolean(question);
+  ui['map-question'].hidden = ui['map-feedback'].hidden = ui['map-clue'].hidden = !visible;
+  if (!visible) return;
+  const title = translate('locate', question.target.name);
+  if (ui['map-question-title'].textContent !== title) ui['map-question-title'].textContent = title;
+  ui['map-question-count'].textContent = round.asked + ' / ' + districts.length + ' · ' + translate('earned', score(progress)).replace(/^\+/, '');
+  // A second hint must leave at least three still-possible choices.
+  const remaining = round.queue.filter(district => !question.wrong.has(district.id));
+  ui['map-hint'].disabled = question.revealing || question.hints === 2
+    || (question.hints === 1 && remaining.length < 2);
+  ui['map-skip'].disabled = question.revealing;
+}
+
+function chooseMapDistrict(id) {
+  if (!updateClock()) return;
+  const question = round.mapQuestion;
+  if (!question || question.revealing || owns(progress, id) || question.wrong.has(id)
+    || round.skipped.has(id) || (question.candidates.length && !question.candidates.includes(id))) return;
+  if (id !== question.target.id) {
+    question.wrong.add(id);
+    question.lastWrong = id;
+    ui['map-feedback'].textContent = translate('wrongDistrict');
+    renderGame();
+    setTimeout(() => {
+      if (round?.mapQuestion !== question || question.lastWrong !== id) return;
+      question.lastWrong = null;
+      const district = districts.find(item => item.id === id);
+      map.paintDistrict(district, false, question.candidates.includes(id), false);
+    }, 450);
+    return;
+  }
+  const points = mapAnswerPoints(question.wrong.size, question.hints);
+  progress.found[id] = points;
+  ui['map-feedback'].textContent = question.target.name + ' · ' + translate('earned', points);
+  nextMapQuestion(id);
+}
+
+ui['map-hint'].addEventListener('click', () => {
+  if (!updateClock() || ui['map-hint'].disabled) return;
+  const question = round.mapQuestion;
+  question.hints++;
+  if (question.hints === 1) {
+    ui['map-clue'].textContent = translate('compass', compassDirection(question.target.location, round.bounds));
+  } else {
+    const decoys = round.queue.filter(district => !question.wrong.has(district.id))
+      .sort((a, b) => turf.distance(a.location, question.target.location) - turf.distance(b.location, question.target.location));
+    question.candidates = [question.target.id, decoys[0].id, decoys[1].id];
+    ui['map-clue'].textContent = translate('narrowHint');
+  }
+  renderGame();
+});
+
+ui['map-skip'].addEventListener('click', () => {
+  if (!updateClock() || ui['map-skip'].disabled) return;
+  const question = round.mapQuestion;
+  question.revealing = true;
+  question.candidates = [];
+  question.lastWrong = null;
+  round.skipped.add(question.target.id);
+  ui['map-feedback'].textContent = translate('passedDistrict', question.target.name);
+  ui['map-clue'].textContent = '';
+  renderGame();
+  mapNextTimer = setTimeout(() => {
+    if (updateClock()) nextMapQuestion();
+  }, 950);
+});
+
+ui['map-quiz-type'].addEventListener('change', () => {
+  if (!mapQuiz || round?.phase !== 'ready') return;
+  mapQuizTimed = ui['map-quiz-type'].value === 'timed';
+  ui['race-options'].hidden = ui['race-clock'].hidden = !mapQuizTimed;
+  setClock(raceDuration(active.districtCount, selectedDifficulty));
+  renderRecords();
+});
+
 function timeText(seconds) {
   return Math.floor(seconds / 60) + ':' + String(seconds % 60).padStart(2, '0');
 }
@@ -265,13 +387,17 @@ function setClock(seconds) {
 function discardRound() {
   clearTimeout(guessTimer);
   clearInterval(roundTimer);
+  clearTimeout(mapNextTimer);
   round = null;
+  ui['map-question'].hidden = ui['map-feedback'].hidden = ui['map-clue'].hidden = true;
+  ui['map-feedback'].textContent = ui['map-clue'].textContent = '';
   ui['race-clock'].hidden = ui['race-ready'].hidden = true;
   ui['guess-row'].hidden = false;
 }
 
 function updateClock() {
   if (round?.phase !== 'running') return false;
+  if (!round.timed) return true;
   const remaining = Math.max(0, Math.ceil((round.deadline - Date.now()) / 1000));
   setClock(remaining);
   if (remaining === 0) finishRound(false);
@@ -280,27 +406,31 @@ function updateClock() {
 
 function finishRound(completed) {
   round.phase = 'finished';
+  round.mapQuestion = null;
+  clearTimeout(mapNextTimer);
   clearInterval(roundTimer);
   clearTimeout(guessTimer);
   ui.province.disabled = false;
   const points = score(progress);
-  const records = state.raceRecords[active.id] ?? {};
+  const book = recordBook();
+  const records = book[active.id] ?? {};
   const previousBest = records[round.difficulty];
   const newBest = previousBest === undefined || points > previousBest;
   if (newBest) {
     records[round.difficulty] = points;
-    state.raceRecords[active.id] = records;
+    book[active.id] = records;
     persist();
   }
   renderGame();
-  ui['race-result-province'].textContent = active.name + ' · ' + translate(round.difficulty) + ' · ' + timeText(round.duration);
-  ui['race-result-status'].textContent = (completed ? translate('completed', active.name) : translate('timeout'))
+  ui['race-result-province'].textContent = active.name + ' · ' + translate(round.difficulty) + (round.timed ? ' · ' + timeText(round.duration) : '');
+  const outcome = completed ? (mapQuiz ? translate('mapRoundDone') : translate('completed', active.name)) : translate('timeout');
+  ui['race-result-status'].textContent = outcome
     + (newBest ? ' · ' + translate('newBest') : '');
   ui['race-result-count'].textContent = ui.count.textContent;
   ui['race-result-area'].textContent = ui.area.textContent;
   ui['race-result-score'].textContent = points;
   ui['race-result-best'].textContent = records[round.difficulty];
-  ui['race-options'].hidden = true;
+  ui['race-options'].hidden = ui['map-quiz-options'].hidden = true;
   ui['race-ready'].hidden = false;
   ui['race-start'].textContent = translate('retry');
   ui['race-start'].disabled = false;
@@ -327,16 +457,27 @@ ui['race-start'].addEventListener('click', () => {
   }
   if (round?.phase !== 'ready') return;
   round.phase = 'running';
-  round.difficulty = selectedDifficulty;
-  round.duration = raceDuration(active.districtCount, round.difficulty);
-  round.deadline = Date.now() + round.duration * 1000;
+  round.difficulty = roundLevel();
+  round.timed = !mapQuiz || mapQuizTimed;
+  if (round.timed) {
+    round.duration = raceDuration(active.districtCount, round.difficulty);
+    round.deadline = Date.now() + round.duration * 1000;
+    roundTimer = setInterval(updateClock, 100);
+  }
   ui['race-ready'].hidden = true;
-  ui['guess-row'].hidden = false;
+  ui['guess-row'].hidden = mapQuiz;
   ui.province.disabled = true;
   closeSearch(true);
-  renderGame();
-  ui.guess.focus();
-  roundTimer = setInterval(updateClock, 100);
+  if (mapQuiz) {
+    round.queue = shuffleDistricts(districts);
+    round.skipped = new Set();
+    round.asked = 0;
+    nextMapQuestion();
+    ui['map-question-title'].focus();
+  } else {
+    renderGame();
+    ui.guess.focus();
+  }
 });
 
 document.addEventListener('visibilitychange', updateClock);
@@ -457,7 +598,7 @@ ui['home-button'].addEventListener('click', () => {
   active = null;
   ui.play.hidden = true;
   ui.home.hidden = false;
-  (challengeMode ? ui.challenge : ui.start).focus();
+  (mapQuiz ? ui['map-quiz'] : challengeMode ? ui.challenge : ui.start).focus();
 });
 ui['rules-button'].addEventListener('click', () => ui['rules-dialog'].showModal());
 ui['settings-button'].addEventListener('click', () => ui['settings-dialog'].showModal());
@@ -469,10 +610,11 @@ ui.language.addEventListener('change', () => {
 });
 applyLanguage();
 
-async function openGame(timed) {
-  challengeMode = timed;
-  ui['free-score'].hidden = timed;
-  ui['province-progress-label'].textContent = translate(timed ? 'records' : 'byProvince');
+async function openGame(timed, locate = false) {
+  mapQuiz = locate;
+  challengeMode = timed || locate;
+  ui['free-score'].hidden = challengeMode;
+  ui['province-progress-label'].textContent = translate(challengeMode ? 'records' : 'byProvince');
   ui.home.hidden = true;
   ui.play.hidden = false;
   ui['home-button'].focus();
@@ -488,7 +630,7 @@ async function openGame(timed) {
     map ??= createMap(ui.map);
     map.refresh();
     renderMenu(false);
-    if (!timed && state.active) await openProvince(state.active, true);
+    if (!challengeMode && state.active) await openProvince(state.active, true);
   } catch (error) {
     if (token === request) message(translate('loadError'));
     console.error(error);
@@ -497,3 +639,5 @@ async function openGame(timed) {
 
 ui.start.addEventListener('click', () => openGame(false));
 ui.challenge.addEventListener('click', () => openGame(true));
+
+ui['map-quiz'].addEventListener('click', () => openGame(false, true));

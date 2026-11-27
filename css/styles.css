@@ -174,3 +174,14 @@ button.contrast { background: #f3ce81; }
 #map .leaflet-control-zoom a:not(.leaflet-disabled):hover { background: #365648; }
 #map .leaflet-control-zoom a:focus-visible { outline: 2px solid #f8d076; outline-offset: -3px; }
 #map .leaflet-control-zoom a.leaflet-disabled { color: var(--muted); opacity: .55; }
+
+.district-choice { cursor: pointer; }
+.district-choice:hover, .district-choice:focus-visible { stroke: #d4efb4; stroke-width: 2; }
+#map-quiz-options { display: flex; align-items: center; flex-wrap: wrap; gap: .4rem; }
+.map-question { display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: .45rem; padding: .25rem; }
+.map-question h2 { font-size: 1.1rem; margin: .12rem 0; }
+.map-question small { color: var(--muted); }
+.map-question-actions { display: flex; gap: .35rem; flex-wrap: wrap; }
+.map-feedback, .map-clue { margin: .25rem; }
+.map-clue { color: #f7cf75; }
+.map-feedback:empty, .map-clue:empty { display: none; }

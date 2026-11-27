@@ -4,6 +4,8 @@ const styles = {
   started: { color: '#ffe499', fillColor: '#f2c252', fillOpacity: .73 },
   done: { color: '#a6ffe2', fillColor: '#95cc6a', fillOpacity: .8 },
   blank: { color: '#96b3cd', fillColor: '#263d58', fillOpacity: 0 },
+  missed: { color: '#f3ae99', fillColor: '#b95248', fillOpacity: .72 },
+  revealed: { color: '#ffe4ab', fillColor: '#e4a54c', fillOpacity: .7 },
   hint: { color: '#ffe499', fillColor: '#f2c252', fillOpacity: .68 },
 };
 
@@ -56,15 +58,32 @@ function createMap(element) {
         path.on('click', () => province.districtCount ? choose(province.id) : path.openTooltip());
       }, 26, animate);
     },
-    showDistricts(data, onReady) {
+    showDistricts(data, onReady, chooseDistrict) {
       districtLayers = new Map();
       show(data, { ...styles.blank, weight: 1.2 }, (feature, path) => {
-        districtLayers.set(feature.properties.id, path);
+        const id = feature.properties.id;
+        districtLayers.set(id, path);
+        if (!chooseDistrict) return;
+        path.options.className += ' district-choice';
+        path.on('click', () => chooseDistrict(id));
+        const choiceNumber = districtLayers.size;
+        path.on('add', () => {
+          const shape = path.getElement();
+          shape.setAttribute('tabindex', '0');
+          shape.setAttribute('role', 'button');
+          shape.setAttribute('aria-label', translate('districtChoice', choiceNumber));
+          shape.addEventListener('keydown', event => {
+            if (event.key !== 'Enter' && event.key !== ' ') return;
+            event.preventDefault();
+            event.stopPropagation();
+            chooseDistrict(id);
+          });
+        });
       }, 32, true, onReady);
     },
-    paintDistrict(district, found, hinted, celebrate) {
+    paintDistrict(district, found, hinted, celebrate, marked) {
       const path = districtLayers.get(district.id);
-      path.setStyle(styles[found ? 'done' : hinted ? 'hint' : 'blank']);
+      path.setStyle(styles[marked ?? (found ? 'done' : hinted ? 'hint' : 'blank')]);
       path.getElement()?.classList.toggle('hinted', hinted && !found);
       if (!found) {
         if (path.getTooltip()) path.unbindTooltip();

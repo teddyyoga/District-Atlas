@@ -11,6 +11,27 @@ function raceDuration(districtCount, difficulty) {
   return (baseMinutes[difficulty] + provinceTier) * 60;
 }
 
+function shuffleDistricts(items) {
+  const shuffled = [...items];
+  for (let end = shuffled.length - 1; end > 0; end--) {
+    const index = Math.floor(Math.random() * (end + 1));
+    [shuffled[index], shuffled[end]] = [shuffled[end], shuffled[index]];
+  }
+  return shuffled;
+}
+
+function mapAnswerPoints(wrongCount, hints) {
+  return Math.max(10, Math.max(25, 100 - wrongCount * 25) - hints * 15);
+}
+
+function compassDirection([lon, lat], [west, south, east, north]) {
+  const x = (lon - (west + east) / 2) / (east - west);
+  const y = (lat - (south + north) / 2) / (north - south);
+  if (Math.hypot(x, y) < .17) return 'center';
+  const sectors = ['east', 'northeast', 'north', 'northwest', 'west', 'southwest', 'south', 'southeast'];
+  return sectors[(Math.round(Math.atan2(y, x) / (Math.PI / 4)) + 8) % 8];
+}
+
 const newProgress = () => ({ found: {}, hint: null });
 
 function pointsForHint(hint) {
