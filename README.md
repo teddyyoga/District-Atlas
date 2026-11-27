@@ -6,7 +6,7 @@
 
 ## Functional requirements
 
-- Provide a home screen with **Free Play**, **Race Mode**, **How to Play**, and **Settings**. Save the selected interface language in the browser.
+- Provide a home screen with **Play**, **How to Play**, and **Settings**. Under **Play**, choose **Free Play** or **Race Mode**, then **District Names** or **Find on the Map**. Save the selected interface language in the browser.
 - Display an interactive, unlabeled map. Let players choose a playable province by clicking it or by searching for its name.
 - Draw the selected province’s district boundaries and accept correct names as the player types, without requiring Enter. Accept spellings without Turkish diacritics. Fill and label the matching polygon after a correct guess.
 - Offer progressive hints, calculate scores and area coverage, and summarize progress across playable provinces.
@@ -22,7 +22,7 @@
 |                                                            |
 | Explore Türkiye's districts.        +-------------------+  |
 |                                     |   Türkiye map     |  |
-| [Free Play] [Race Mode]               |   illustration    |  |
+| [Play] [How to Play]                  |   illustration    |  |
 |                                     +-------------------+  |
 | Map data                                                   |
 +------------------------------------------------------------+
@@ -59,7 +59,7 @@ The progress panel expands on request. The district input and hint controls appe
 
 ## Race Mode
 
-Choose **Race Mode** on the home screen, select a province, choose a difficulty, then select **Start Round** after the map finishes loading and zooming. The province’s district count determines the time limit.
+Choose **Play → Race Mode**, select a puzzle type and a province, choose a difficulty, then select **Start Round** after the map finishes loading and zooming. The province’s district count determines the time limit.
 
 | Districts in the province | Hard | Medium | Easy |
 | --- | --- | --- | --- |
@@ -75,7 +75,7 @@ Choose **Race Mode** on the home screen, select a province, choose a difficulty,
 
 ## Find on the Map
 
-Pick a province and choose Untimed or Timed. The game shuffles the province’s districts and asks each one once. Select the district polygon by clicking, tapping, or focusing it and pressing Enter or Space. Wrong choices flash red. Correct choices turn green and reveal the district name.
+Choose **Play**, then **Free Play** for an untimed round or **Race Mode** for a timed round. Select **Find on the Map** and pick a province. The game shuffles the province’s districts and asks each one once. Select the district polygon by clicking, tapping, or focusing it and pressing Enter or Space. Wrong choices flash red. Correct choices turn green and reveal the district name.
 
 The first hint gives an approximate compass direction. The second highlights three possible districts when enough unresolved choices remain. A correct answer earns 100, 75, 50, or 25 points based on the number of distinct wrong choices. Each hint deducts 15 points and a correct answer always earns at least 10. Skip briefly reveals the correct polygon for zero points.
 

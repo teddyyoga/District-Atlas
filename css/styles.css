@@ -177,7 +177,12 @@ button.contrast { background: #f3ce81; }
 
 .district-choice { cursor: pointer; }
 .district-choice:hover, .district-choice:focus-visible { stroke: #d4efb4; stroke-width: 2; }
-#map-quiz-options { display: flex; align-items: center; flex-wrap: wrap; gap: .4rem; }
+.play-choices, .play-dialog-footer { display: flex; flex-wrap: wrap; gap: .55rem; }
+.play-dialog-footer { margin-top: 1rem; }
+#play-dialog section p { color: var(--muted); }
+@media (prefers-reduced-motion: no-preference) {
+  #play-dialog section:not([hidden]) { animation: enter-rise 180ms ease-out both; }
+}
 .map-question { display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: .45rem; padding: .25rem; }
 .map-question h2 { font-size: 1.1rem; margin: .12rem 0; }
 .map-question small { color: var(--muted); }

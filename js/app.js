@@ -7,7 +7,7 @@ let guessTimer;
 let playable = [];
 let challengeMode = false;
 let mapQuiz = false;
-let mapQuizTimed = false;
+let timedMode = false;
 let mapNextTimer;
 let round = null;
 let roundTimer;
@@ -58,7 +58,7 @@ function recordBook() {
 }
 
 function roundLevel() {
-  return mapQuiz && !mapQuizTimed ? 'untimed' : selectedDifficulty;
+  return !timedMode ? 'untimed' : selectedDifficulty;
 }
 
 function renderRecords() {
@@ -174,14 +174,12 @@ async function openProvince(id, restoring = false) {
     if (challengeMode) {
       progress = newProgress();
       round = { phase: 'ready', deadline: null };
-      ui['race-clock'].hidden = mapQuiz && !mapQuizTimed;
+      ui['race-clock'].hidden = !timedMode;
       ui['race-ready'].hidden = false;
       ui['race-start'].textContent = translate(mapQuiz ? 'locateStart' : 'raceStart');
       ui['race-province'].textContent = active.name;
       ui['guess-row'].hidden = true;
-      ui['map-quiz-options'].hidden = !mapQuiz;
-      ui['map-quiz-type'].value = mapQuizTimed ? 'timed' : 'untimed';
-      ui['race-options'].hidden = mapQuiz && !mapQuizTimed;
+      ui['race-options'].hidden = !timedMode;
       ui['race-difficulty'].replaceChildren(...raceDifficulties.map(difficulty =>
         new Option(
           translate(difficulty) + ' · ' + timeText(raceDuration(active.districtCount, difficulty)),
@@ -366,14 +364,6 @@ ui['map-skip'].addEventListener('click', () => {
   }, 950);
 });
 
-ui['map-quiz-type'].addEventListener('change', () => {
-  if (!mapQuiz || round?.phase !== 'ready') return;
-  mapQuizTimed = ui['map-quiz-type'].value === 'timed';
-  ui['race-options'].hidden = ui['race-clock'].hidden = !mapQuizTimed;
-  setClock(raceDuration(active.districtCount, selectedDifficulty));
-  renderRecords();
-});
-
 function timeText(seconds) {
   return Math.floor(seconds / 60) + ':' + String(seconds % 60).padStart(2, '0');
 }
@@ -430,7 +420,7 @@ function finishRound(completed) {
   ui['race-result-area'].textContent = ui.area.textContent;
   ui['race-result-score'].textContent = points;
   ui['race-result-best'].textContent = records[round.difficulty];
-  ui['race-options'].hidden = ui['map-quiz-options'].hidden = true;
+  ui['race-options'].hidden = true;
   ui['race-ready'].hidden = false;
   ui['race-start'].textContent = translate('retry');
   ui['race-start'].disabled = false;
@@ -458,7 +448,7 @@ ui['race-start'].addEventListener('click', () => {
   if (round?.phase !== 'ready') return;
   round.phase = 'running';
   round.difficulty = roundLevel();
-  round.timed = !mapQuiz || mapQuizTimed;
+  round.timed = timedMode;
   if (round.timed) {
     round.duration = raceDuration(active.districtCount, round.difficulty);
     round.deadline = Date.now() + round.duration * 1000;
@@ -598,7 +588,7 @@ ui['home-button'].addEventListener('click', () => {
   active = null;
   ui.play.hidden = true;
   ui.home.hidden = false;
-  (mapQuiz ? ui['map-quiz'] : challengeMode ? ui.challenge : ui.start).focus();
+  ui['play-button'].focus();
 });
 ui['rules-button'].addEventListener('click', () => ui['rules-dialog'].showModal());
 ui['settings-button'].addEventListener('click', () => ui['settings-dialog'].showModal());
@@ -612,6 +602,7 @@ applyLanguage();
 
 async function openGame(timed, locate = false) {
   mapQuiz = locate;
+  timedMode = timed;
   challengeMode = timed || locate;
   ui['free-score'].hidden = challengeMode;
   ui['province-progress-label'].textContent = translate(challengeMode ? 'records' : 'byProvince');
@@ -637,7 +628,35 @@ async function openGame(timed, locate = false) {
   }
 }
 
-ui.start.addEventListener('click', () => openGame(false));
-ui.challenge.addEventListener('click', () => openGame(true));
+let menuTimed = false;
 
-ui['map-quiz'].addEventListener('click', () => openGame(false, true));
+function showModeChoices() {
+  ui['mode-choice'].hidden = false;
+  ui['puzzle-choice'].hidden = ui['play-back'].hidden = true;
+}
+
+function showPuzzleChoices(timed) {
+  menuTimed = timed;
+  ui['chosen-mode'].textContent = translate(timed ? 'challenge' : 'start') + ' · ' + translate('choosePuzzle');
+  ui['puzzle-choice'].hidden = ui['play-back'].hidden = false;
+  ui['mode-choice'].hidden = true;
+  ui['puzzle-name'].focus();
+}
+
+ui['play-button'].addEventListener('click', () => {
+  showModeChoices();
+  ui['play-dialog'].showModal();
+  ui['mode-free'].focus();
+});
+ui['mode-free'].addEventListener('click', () => showPuzzleChoices(false));
+ui['mode-race'].addEventListener('click', () => showPuzzleChoices(true));
+ui['play-back'].addEventListener('click', () => {
+  showModeChoices();
+  ui[menuTimed ? 'mode-race' : 'mode-free'].focus();
+});
+function launchPuzzle(locate) {
+  ui['play-dialog'].close();
+  return openGame(menuTimed, locate);
+}
+ui['puzzle-name'].addEventListener('click', () => launchPuzzle(false));
+ui['puzzle-map'].addEventListener('click', () => launchPuzzle(true));
