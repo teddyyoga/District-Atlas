@@ -46,11 +46,15 @@ function persist() {
   ui['storage-note'].hidden = saveState(state);
 }
 
+const savesMapProgress = () => mapQuiz && !timedMode;
+const progressBook = () => savesMapProgress() ? state.mapProgress : state.provinces;
+
 function status(province) {
-  const record = state.provinces[province.id];
+  const record = progressBook()[province.id];
   if (!province.districtCount) return 'unavailable';
+  if (record?.finished) return 'done';
   if (Object.keys(record?.found ?? {}).length >= province.districtCount) return 'done';
-  return record && (score(record) || record.hint) ? 'started' : 'ready';
+  return record && (savesMapProgress() || score(record) || record.hint) ? 'started' : 'ready';
 }
 
 function recordBook() {
@@ -85,15 +89,15 @@ function renderRecords() {
 }
 
 function renderProgress() {
-  if (challengeMode) {
+  if (timedMode) {
     renderRecords();
     return;
   }
   const complete = playable.filter(province => status(province) === 'done').length;
   ui.summary.textContent = complete + ' / ' + playable.length;
   const rows = playable.map(province => {
-    const record = state.provinces[province.id];
-    const count = Object.keys(record?.found ?? {}).length;
+    const record = progressBook()[province.id];
+    const count = Object.keys(record?.found ?? {}).length + (record?.skipped?.length ?? 0);
     const row = document.createElement('li');
     const name = document.createElement('span');
     name.textContent = province.name;
@@ -104,7 +108,7 @@ function renderProgress() {
     reset.type = 'button';
     reset.textContent = translate('reset');
     reset.setAttribute('aria-label', translate('resetTitle', province.name));
-    reset.disabled = !count && !record?.hint;
+    reset.disabled = savesMapProgress() ? !record : !count && !record?.hint;
     reset.addEventListener('click', () => resetProvince(province));
     row.append(name, percentage, reset);
     return row;
@@ -114,7 +118,20 @@ function renderProgress() {
 
 function resetProvince(province) {
   if (!confirm(translate('confirmReset', province.name))) return;
-  delete state.provinces[province.id];
+  delete progressBook()[province.id];
+  if (savesMapProgress()) {
+    persist();
+    if (active?.id === province.id) {
+      discardRound();
+      openProvince(province.id);
+    } else if (!active) renderMenu(false);
+    else {
+      totals();
+      renderProgress();
+    }
+    ui['province-progress'].querySelector('summary').focus();
+    return;
+  }
   if (active?.id === province.id) {
     clearTimeout(guessTimer);
     progress = newProgress();
@@ -132,7 +149,7 @@ function resetProvince(province) {
 }
 
 function totals() {
-  ui.total.textContent = Object.values(state.provinces).reduce((sum, record) => sum + score(record), 0);
+  ui.total.textContent = Object.values(progressBook()).reduce((sum, record) => sum + score(record), 0);
 }
 
 function message(text) {
@@ -151,12 +168,12 @@ function renderMenu(animate = true) {
   message('');
   totals();
   renderProgress();
-  map.showProvinces(provinces, challengeMode ? province => province.districtCount ? 'ready' : 'unavailable' : status, openProvince, animate);
+  map.showProvinces(provinces, timedMode ? province => province.districtCount ? 'ready' : 'unavailable' : status, openProvince, animate);
 }
 
 async function openProvince(id, restoring = false) {
   const province = provinces.features.find(feature => feature.properties.id === id)?.properties;
-  if (!province?.districtCount || round?.phase === 'running') return;
+  if (!province?.districtCount || (timedMode && round?.phase === 'running')) return;
   const token = ++request;
   closeSearch(true);
   if (challengeMode) ui['race-start'].disabled = true;
@@ -192,6 +209,18 @@ async function openProvince(id, restoring = false) {
         data.features.forEach((feature, index) => {
           districts[index].location = turf.pointOnFeature(feature).geometry.coordinates;
         });
+        const saved = savesMapProgress() ? state.mapProgress[id] : null;
+        if (saved) {
+          progress = { found: { ...saved.found }, hint: null };
+          round.saved = saved;
+          round.skipped = new Set(saved.skipped);
+          if (saved.finished) round.phase = 'finished';
+          ui['race-start'].textContent = translate(saved.finished ? 'retry' : 'continueRound');
+        }
+        if (savesMapProgress()) {
+          state.mapActive = id;
+          persist();
+        }
       }
     } else {
       progress = state.provinces[id] ?? newProgress();
@@ -204,7 +233,7 @@ async function openProvince(id, restoring = false) {
     ui.title.textContent = province.name;
     ui.guess.value = ui.feedback.textContent = '';
     map.showDistricts(data, challengeMode ? () => {
-      if (token === request && round?.phase === 'ready') ui['race-start'].disabled = false;
+      if (token === request && round && round.phase !== 'running') ui['race-start'].disabled = false;
     } : undefined, mapQuiz ? chooseMapDistrict : undefined);
     message('');
     renderGame();
@@ -241,7 +270,8 @@ function renderGame(celebrateId) {
   }
   if (mapQuiz) {
     renderMapQuestion();
-    renderRecords();
+    totals();
+    renderProgress();
     return;
   }
   const target = districts.find(district => district.id === hint?.id);
@@ -281,6 +311,51 @@ function renderClue(target, hint) {
   ui.clue.append(...tiles);
 }
 
+function checkpointMapProgress() {
+  if (!savesMapProgress()) return;
+  const question = round.mapQuestion;
+  const pending = question && !question.revealing;
+  state.mapProgress[active.id] = {
+    found: { ...progress.found },
+    skipped: [...round.skipped],
+    queue: round.queue.map(district => district.id),
+    asked: round.asked,
+    question: pending ? {
+      id: question.target.id, wrong: [...question.wrong], candidates: [...question.candidates], hints: question.hints,
+    } : null,
+    finished: round.phase === 'finished',
+  };
+  persist();
+}
+
+function renderSavedClue(question) {
+  ui['map-clue'].textContent = question.hints === 2 ? translate('narrowHint')
+    : question.hints === 1 ? translate('compass', compassDirection(question.target.location, round.bounds)) : '';
+}
+
+function startMapQuestions() {
+  const saved = round.saved;
+  round.skipped = new Set(saved?.skipped);
+  round.asked = saved?.asked ?? 0;
+  if (saved) {
+    const byId = new Map(districts.map(district => [district.id, district]));
+    round.queue = saved.queue.map(id => byId.get(id)).filter(Boolean);
+    const question = saved.question;
+    if (question && byId.has(question.id)) {
+      round.mapQuestion = {
+        target: byId.get(question.id), wrong: new Set(question.wrong), candidates: question.candidates,
+        hints: question.hints, lastWrong: null, revealing: false,
+      };
+      renderSavedClue(round.mapQuestion);
+      renderGame();
+      return;
+    }
+  } else {
+    round.queue = shuffleDistricts(districts);
+  }
+  nextMapQuestion();
+}
+
 function nextMapQuestion(celebrateId) {
   const target = round.queue.shift();
   if (!target) {
@@ -293,6 +368,7 @@ function nextMapQuestion(celebrateId) {
     target, wrong: new Set(), candidates: [], lastWrong: null, hints: 0, revealing: false,
   };
   ui['map-clue'].textContent = '';
+  checkpointMapProgress();
   renderGame(celebrateId);
 }
 
@@ -320,6 +396,7 @@ function chooseMapDistrict(id) {
     question.wrong.add(id);
     question.lastWrong = id;
     ui['map-feedback'].textContent = translate('wrongDistrict');
+    checkpointMapProgress();
     renderGame();
     setTimeout(() => {
       if (round?.mapQuestion !== question || question.lastWrong !== id) return;
@@ -339,14 +416,13 @@ ui['map-hint'].addEventListener('click', () => {
   if (!updateClock() || ui['map-hint'].disabled) return;
   const question = round.mapQuestion;
   question.hints++;
-  if (question.hints === 1) {
-    ui['map-clue'].textContent = translate('compass', compassDirection(question.target.location, round.bounds));
-  } else {
+  if (question.hints === 2) {
     const decoys = round.queue.filter(district => !question.wrong.has(district.id))
       .sort((a, b) => turf.distance(a.location, question.target.location) - turf.distance(b.location, question.target.location));
     question.candidates = [question.target.id, decoys[0].id, decoys[1].id];
-    ui['map-clue'].textContent = translate('narrowHint');
   }
+  renderSavedClue(question);
+  checkpointMapProgress();
   renderGame();
 });
 
@@ -357,6 +433,7 @@ ui['map-skip'].addEventListener('click', () => {
   question.candidates = [];
   question.lastWrong = null;
   round.skipped.add(question.target.id);
+  checkpointMapProgress();
   ui['map-feedback'].textContent = translate('passedDistrict', question.target.name);
   ui['map-clue'].textContent = '';
   renderGame();
@@ -412,6 +489,7 @@ function finishRound(completed) {
     book[active.id] = records;
     persist();
   }
+  checkpointMapProgress();
   renderGame();
   ui['race-result-province'].textContent = active.name + ' · ' + translate(round.difficulty) + (round.timed ? ' · ' + timeText(round.duration) : '');
   const outcome = completed ? (mapQuiz ? translate('mapRoundDone') : translate('completed', active.name)) : translate('timeout');
@@ -430,7 +508,7 @@ function finishRound(completed) {
 }
 
 function canLeaveRound() {
-  return round?.phase !== 'running' || (updateClock() && confirm(translate('cancelRace')));
+  return !timedMode || round?.phase !== 'running' || (updateClock() && confirm(translate('cancelRace')));
 }
 
 ui['race-difficulty'].addEventListener('change', () => {
@@ -440,10 +518,18 @@ ui['race-difficulty'].addEventListener('change', () => {
   renderRecords();
 });
 
+function retryRound() {
+  if (savesMapProgress()) {
+    delete state.mapProgress[active.id];
+    persist();
+  }
+  return openProvince(active.id);
+}
+
 ui['race-start'].addEventListener('click', () => {
   if (ui['race-start'].disabled) return;
   if (round?.phase === 'finished') {
-    openProvince(active.id);
+    retryRound();
     return;
   }
   if (round?.phase !== 'ready') return;
@@ -457,13 +543,10 @@ ui['race-start'].addEventListener('click', () => {
   }
   ui['race-ready'].hidden = true;
   ui['guess-row'].hidden = mapQuiz;
-  ui.province.disabled = true;
+  ui.province.disabled = timedMode;
   closeSearch(true);
   if (mapQuiz) {
-    round.queue = shuffleDistricts(districts);
-    round.skipped = new Set();
-    round.asked = 0;
-    nextMapQuestion();
+    startMapQuestions();
     ui['map-question-title'].focus();
   } else {
     renderGame();
@@ -474,7 +557,7 @@ ui['race-start'].addEventListener('click', () => {
 document.addEventListener('visibilitychange', updateClock);
 ui['race-retry'].addEventListener('click', () => {
   ui['race-dialog'].close();
-  openProvince(active.id);
+  retryRound();
 });
 ui['race-change'].addEventListener('click', () => {
   ui['race-dialog'].close();
@@ -575,7 +658,10 @@ document.addEventListener('pointerdown', event => {
 });
 ui.back.addEventListener('click', () => {
   if (!canLeaveRound()) return;
-  if (!challengeMode) {
+  if (savesMapProgress()) {
+    state.mapActive = null;
+    persist();
+  } else if (!challengeMode) {
     state.active = null;
     persist();
   }
@@ -605,8 +691,8 @@ async function openGame(timed, locate = false) {
   mapQuiz = locate;
   timedMode = timed;
   challengeMode = timed || locate;
-  ui['free-score'].hidden = challengeMode;
-  ui['province-progress-label'].textContent = translate(challengeMode ? 'records' : 'byProvince');
+  ui['free-score'].hidden = timedMode;
+  ui['province-progress-label'].textContent = translate(timedMode ? 'records' : 'byProvince');
   ui.home.hidden = true;
   ui.play.hidden = false;
   ui['home-button'].focus();
@@ -622,7 +708,8 @@ async function openGame(timed, locate = false) {
     map ??= createMap(ui.map);
     map.refresh();
     renderMenu(false);
-    if (!challengeMode && state.active) await openProvince(state.active, true);
+    if (savesMapProgress() && state.mapActive) await openProvince(state.mapActive, true);
+    else if (!challengeMode && state.active) await openProvince(state.active, true);
   } catch (error) {
     if (token === request) message(translate('loadError'));
     console.error(error);

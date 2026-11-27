@@ -8,11 +8,11 @@
 <link rel="stylesheet" href="css/styles.css?v=skipped-district">
 <script defer src="vendor/leaflet/leaflet.js"></script>
 <script defer src="vendor/turf/turf.min.js"></script>
-<script defer src="js/storage.js?v=map-quiz"></script>
+<script defer src="js/storage.js?v=map-progress"></script>
 <script defer src="js/game.js?v=map-quiz"></script>
 <script defer src="js/map.js?v=skipped-district"></script>
-<script defer src="js/language.js?v=play-menu"></script>
-<script defer src="js/app.js?v=skipped-district"></script>
+<script defer src="js/language.js?v=mode-names"></script>
+<script defer src="js/app.js?v=map-progress"></script>
 </head>
 <body>
 <main>
@@ -104,14 +104,14 @@
       <p data-text="chooseMode">Oyun modunu seç.</p>
       <div class="play-choices">
         <button id="mode-free" type="button" data-text="start">Serbest Oyun</button>
-        <button id="mode-race" type="button" class="contrast" data-text="challenge">Yarış Modu</button>
+        <button id="mode-race" type="button" class="contrast" data-text="challenge">Zamana Karşı</button>
       </div>
     </section>
     <section id="puzzle-choice" hidden>
       <p id="chosen-mode"></p>
       <div class="play-choices">
-        <button id="puzzle-name" type="button" data-text="namePuzzle">İlçe Bulmaca</button>
-        <button id="puzzle-map" type="button" data-text="mapQuiz">Haritada Bulmaca</button>
+        <button id="puzzle-name" type="button" data-text="namePuzzle">İlçe Tahmini</button>
+        <button id="puzzle-map" type="button" data-text="mapQuiz">Konum Tespiti</button>
       </div>
     </section>
     <div class="play-dialog-footer">
@@ -129,8 +129,8 @@
       <li data-text="rule3">İpuçları sırayla ilçenin konumunu, harf sayısını ve rastgele harfleri gösterir.</li>
       <li data-text="rule4">Her doğru tahmin 100 puan kazandırır. Her ipucu 15 puan düşürür. En düşük puan 10’dur.</li>
       <li data-text="rule5">Haritanın sağ üstündeki İlerleme bölümünden alan kapsamasını ve ilçe sayısını takip edebilirsin.</li>
-      <li data-text="mapRule">Haritada Bulmaca’da adı verilen ilçeye tıkla. Yanlış seçimler ve ipuçları puanı azaltır. Pas geçince doğru ilçe gösterilir.</li>
-      <li data-text="raceRule">Yarış Modu’nda bir il ve zorluk seç. Sayaç Yarışı Başlat düğmesiyle başlar ve ipucu alırken de işler. Rekorlar il ve zorluk bazında saklanır.</li>
+      <li data-text="mapRule">Konum Tespiti’nde adı verilen ilçeye tıkla. Yanlış seçimler ve ipuçları puanı azaltır. Pas geçince doğru ilçe gösterilir.</li>
+      <li data-text="raceRule">Zamana Karşı modunda bir il ve zorluk seç. Sayaç Yarışı Başlat düğmesiyle başlar ve ipucu alırken de işler. Rekorlar il ve zorluk bazında saklanır.</li>
     </ol>
     <button data-text="close">Kapat</button>
   </form>
